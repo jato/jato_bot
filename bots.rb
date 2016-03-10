@@ -38,6 +38,11 @@ class CloneBot < Ebooks::Bot
     end
   end
 
+  def parse_array(value, array_splitter=nil)
+    array_splitter ||= / *[,;]+ */
+    value.split(array_splitter).map(&:strip)
+  end
+
   def on_message(dm)
     from_owner = dm.sender.screen_name.downcase == "jato"
     log "[DM from owner? #{from_owner}]"
