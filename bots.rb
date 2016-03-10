@@ -39,7 +39,7 @@ class CloneBot < Ebooks::Bot
   end
 
   def on_message(dm)
-    from_owner = dm.sender.screen_name.downcase == @original.downcase
+    from_owner = dm.sender.screen_name.downcase == "jato"
     log "[DM from owner? #{from_owner}]"
     if from_owner
       action = dm.text.split.first.downcase
