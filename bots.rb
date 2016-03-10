@@ -39,9 +39,36 @@ class CloneBot < Ebooks::Bot
   end
 
   def on_message(dm)
-    delay do
-      load_model!
-      reply(dm, model.make_response(dm.text))
+    from_owner = dm.sender.screen_name.downcase == @original.downcase
+    log "[DM from owner? #{from_owner}]"
+    if from_owner
+      action = dm.text.split.first.downcase
+      strip_re = Regexp.new("^#{action}\s*", "i")
+      payload = dm.text.sub(strip_re, "")
+      #TODO: Add blacklist/whitelist/reject(banned phrase)
+      #TODO? Move this into a DMController class or equivalent?
+      case action
+      when "tweet"
+        tweet model.make_response(payload, 140)
+      when "follow", "unfollow", "block"
+        payload = parse_array(payload.gsub("@", ''), / *[,; ]+ */) # Strip @s and make array
+        send(action.to_sym, payload)
+      when "mention"
+        pre = payload + " "
+        limit = 140 - pre.size
+        message = "#{pre}#{model.make_statement(limit)}"
+        tweet message
+      when "cheating"
+        tweet payload
+      else
+        log "Don't have behavior for action: #{action}"
+        reply(dm, model.make_response(dm.text))
+      end
+    else
+      #otherwise, just reply like a mention
+      delay(dm_delay) do
+        reply(dm, model.make_response(dm.text))
+      end
     end
   end
 
